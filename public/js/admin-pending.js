@@ -141,6 +141,8 @@
     document.getElementById('reviewPendingUrl').value = config.url || '';
     document.getElementById('reviewPendingLogo').value = config.logo || '';
     document.getElementById('reviewPendingDesc').value = config.desc || '';
+    document.getElementById('reviewPendingCardImage').value = config.card_image || '';
+    document.getElementById('reviewPendingCardVideo').value = config.card_video || '';
     document.getElementById('reviewPendingSortOrder').value = '';
 
     const category = window.categoriesData.find(item => String(item.id) === String(config.catelog_id));
@@ -180,6 +182,8 @@
     const url = document.getElementById('reviewPendingUrl').value.trim();
     const logo = document.getElementById('reviewPendingLogo').value.trim();
     const desc = document.getElementById('reviewPendingDesc').value.trim();
+    const cardImage = document.getElementById('reviewPendingCardImage')?.value.trim() || '';
+    const cardVideo = document.getElementById('reviewPendingCardVideo')?.value.trim() || '';
     const catelogId = document.getElementById('reviewPendingCatelog').value;
     const sortOrder = document.getElementById('reviewPendingSortOrder').value;
     const isPrivate = document.getElementById('reviewPendingIsPrivate').checked;
@@ -189,7 +193,7 @@
       return;
     }
 
-    const payload = { name, url, logo, desc, catelog_id: catelogId, is_private: isPrivate };
+    const payload = { name, url, logo, desc, card_image: cardImage, card_video: cardVideo, catelog_id: catelogId, is_private: isPrivate };
     if (sortOrder !== '') payload.sort_order = Number(sortOrder);
 
     const submitBtn = form.querySelector('button[type="submit"]');

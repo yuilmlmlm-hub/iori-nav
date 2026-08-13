@@ -114,7 +114,7 @@ export async function onRequest(context) {
   const settingsKeys = getSettingsKeys();
   const settingsPlaceholders = settingsKeys.map(() => '?').join(',');
   // sort_order 仅用于 ORDER BY，不参与 SELECT（SQLite 允许）；前端不使用该字段
-  const sitesQuery = `SELECT id, name, url, logo, desc, catelog_id, catelog_name
+  const sitesQuery = `SELECT id, name, url, logo, desc, card_image, card_video, catelog_id, catelog_name
                       FROM sites WHERE (is_private = 0 OR ? = 1) ORDER BY sort_order ASC, create_time DESC`;
 
   // Settings 缓存：优先从 KV 读取，减少数据库查询
@@ -253,6 +253,8 @@ export async function onRequest(context) {
   };
   const getCardStyleGridClass = (style, prefix) => {
     if (style === 'style3') return `${prefix}-card-style3`;
+    if (style === 'style4') return `${prefix}-card-style4`;
+    if (style === 'style5') return `${prefix}-card-style5`;
     return style === 'style2' ? `${prefix}-card-style2` : `${prefix}-card-style1`;
   };
   const mobileCardStyleClass = getCardStyleGridClass(S.mobile_layout_card_style, 'mobile');

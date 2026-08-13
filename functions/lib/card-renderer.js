@@ -34,6 +34,33 @@ export function renderSiteCards(sites, settings) {
         ${card.catalogHtml}
       </span>`;
 
+    if (config.isMediaCardStyle) {
+      const mediaHtml = config.cardStyle === 'style4'
+        ? (card.hasCardImage
+          ? `<div class="site-card-media"><img src="${card.cardImageHtml}" alt="${card.nameHtml}" ${imgLoadingAttrs}></div>`
+          : `<div class="site-card-media site-card-media-fallback">${card.cardInitialHtml}</div>`)
+        : (card.hasCardVideo
+          ? `<div class="site-card-media"><video src="${card.cardVideoHtml}" ${card.hasCardImage ? `poster="${card.cardImageHtml}"` : ''} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video></div>`
+          : `<div class="site-card-media site-card-media-fallback">${card.cardInitialHtml}</div>`);
+
+      return `
+        <div class="${config.baseCardClass} ${config.frostedClass} ${config.cardStyleClass} card-anim-enter" data-id="${card.id}">
+          ${mediaHtml}
+          <div class="site-card-media-overlay">
+            <a href="${card.urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
+              <div class="site-card-media-top">
+                <h3 class="${config.titleClass}" title="${card.nameHtml}">${card.nameHtml}</h3>
+                ${categoryHtml}
+              </div>
+            </a>
+            <div class="site-card-media-bottom">
+              ${descHtml}
+              ${linksHtml}
+            </div>
+          </div>
+        </div>`;
+    }
+
     return `
       <div class="${config.baseCardClass} ${config.frostedClass} ${config.cardStyleClass} card-anim-enter" data-id="${card.id}">
         <div class="site-card-content">

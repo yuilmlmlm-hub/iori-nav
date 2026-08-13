@@ -130,6 +130,7 @@
 
     grid.innerHTML = cards.map(card => {
       const isNavigationTileStyle = settings.cardStyle === 'style3';
+      const isMediaCardStyle = settings.cardStyle === 'style4' || settings.cardStyle === 'style5';
       const hideCardCategory = isNavigationTileStyle || settings.hideCardCategory;
       const hideCardDesc = isNavigationTileStyle || settings.hideCardDesc;
       const hideCardLinks = isNavigationTileStyle || settings.hideCardLinks;
@@ -150,7 +151,13 @@
         'overflow-hidden',
         'transition-all',
         settings.frosted ? '' : 'bg-white border border-primary-100/60 shadow-sm',
-        settings.cardStyle === 'style2' ? 'style-2' : (isNavigationTileStyle ? 'style-3' : ''),
+        settings.cardStyle === 'style2'
+          ? 'style-2'
+          : (isNavigationTileStyle
+            ? 'style-3'
+            : (settings.cardStyle === 'style4'
+              ? 'style-4'
+              : (settings.cardStyle === 'style5' ? 'style-5' : ''))),
         settings.frosted ? 'frosted frosted-glass-effect' : '',
         hideCardDesc ? 'is-desc-hidden' : '',
         hideCardLinks ? 'is-links-hidden' : '',
@@ -172,6 +179,35 @@
               <span class="copy-success hidden absolute -top-8 right-0 bg-accent-500 text-white text-xs px-2 py-1 rounded shadow-md">已复制!</span>
             </button>
           </div>`;
+
+      if (isMediaCardStyle) {
+        const cardImage = card.cardImage ? shared.escapeHTML(card.cardImage) : '';
+        const cardVideo = card.cardVideo ? shared.escapeHTML(card.cardVideo) : '';
+        const mediaHtml = settings.cardStyle === 'style4'
+          ? (cardImage
+            ? `<div class="site-card-media"><img src="${cardImage}" alt="${nameHtml}" loading="lazy" decoding="async"></div>`
+            : `<div class="site-card-media site-card-media-fallback">${initial}</div>`)
+          : (cardVideo
+            ? `<div class="site-card-media"><video src="${cardVideo}" ${cardImage ? `poster="${cardImage}"` : ''} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video></div>`
+            : `<div class="site-card-media site-card-media-fallback">${initial}</div>`);
+
+        return `
+        <article class="${cardClass}" data-id="${shared.escapeHTML(card.id)}">
+          ${mediaHtml}
+          <div class="site-card-media-overlay">
+            <a href="${urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
+              <div class="site-card-media-top">
+                <h3 class="site-title text-base font-medium truncate transition-all duration-300" title="${nameHtml}">${nameHtml}</h3>
+                ${categoryHtml}
+              </div>
+            </a>
+            <div class="site-card-media-bottom">
+              ${descHtml}
+              ${linkHtml}
+            </div>
+          </div>
+        </article>`;
+      }
 
       return `
         <article class="${cardClass}" data-id="${shared.escapeHTML(card.id)}">

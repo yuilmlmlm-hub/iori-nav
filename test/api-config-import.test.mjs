@@ -256,7 +256,7 @@ test('import override without sort_order keeps the existing sort order', async (
   assert.match(body.message, /更新 1 个/);
   assert.ok(updateCall);
   assert.match(updateCall.sql, /sort_order=COALESCE\(\?, sort_order\)/);
-  assert.equal(updateCall.params[5], null);
+  assert.equal(updateCall.params[7], null);
 });
 
 test('import forces public children and sites private under a private parent category', async () => {
@@ -334,8 +334,8 @@ test('import forces public children and sites private under a private parent cat
   assert.deepEqual(categoryInsertCalls[0].params, ['私人资料', 9999, 0, 1]);
   assert.deepEqual(categoryInsertCalls[1].params, ['账号面板', 9999, 10, 1]);
   assert.ok(siteInsertCall);
-  assert.equal(siteInsertCall.params[5], '账号面板');
-  assert.equal(siteInsertCall.params[7], 1);
+  assert.equal(siteInsertCall.params[7], '账号面板');
+  assert.equal(siteInsertCall.params[9], 1);
 });
 
 test('import maps Chrome root bookmarks into a root category', async () => {
@@ -408,8 +408,8 @@ test('import maps Chrome root bookmarks into a root category', async () => {
   assert.ok(categoryInsertCall);
   assert.deepEqual(categoryInsertCall.params, ['默认', 9999, 0, 0]);
   assert.ok(siteInsertCall);
-  assert.equal(siteInsertCall.params[4], 30);
-  assert.equal(siteInsertCall.params[5], '默认');
+  assert.equal(siteInsertCall.params[6], 30);
+  assert.equal(siteInsertCall.params[7], '默认');
 });
 
 test('import skips overlong bookmark rows instead of writing them', async () => {

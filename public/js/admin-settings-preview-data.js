@@ -35,6 +35,8 @@
       displayUrl: url || '未提供链接',
       logo: shared.normalizePreviewAssetUrl(item?.logo),
       desc: String(item?.desc || '暂无描述').trim(),
+      cardImage: shared.normalizePreviewAssetUrl(item?.card_image),
+      cardVideo: shared.normalizePreviewAssetUrl(item?.card_video),
       category,
       hasValidUrl: Boolean(url),
       sortOrder: Number(item?.sort_order ?? 9999),

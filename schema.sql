@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS sites (
   url TEXT NOT NULL,
   logo TEXT,
   desc TEXT,
+  card_image TEXT,
+  card_video TEXT,
   catelog_id INTEGER NOT NULL,
   catelog_name TEXT,
   sort_order INTEGER NOT NULL DEFAULT 9999,
@@ -26,6 +28,8 @@ CREATE TABLE IF NOT EXISTS pending_sites (
   url TEXT NOT NULL,
   logo TEXT,
   desc TEXT,
+  card_image TEXT,
+  card_video TEXT,
   catelog_id INTEGER NOT NULL,
   catelog_name TEXT,
   create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP

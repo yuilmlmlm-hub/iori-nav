@@ -6,6 +6,8 @@ export const STYLE_DEFAULT_WALLPAPERS = {
   style1: 'https://img.peapix.com/dc6e559cacb14f9c83b46d5a7f189bab_1920.jpg',
   style2: 'https://img.peapix.com/1f4688b7a0d64bda9c508f9498b04f49_1920.jpg',
   style3: 'https://main.ssss.nyc.mn/background.webp',
+  style4: 'https://cdn.jsdelivr.net/gh/jy02739244/iori-nav@master/image/fengge.jpg',
+  style5: 'https://cdn.jsdelivr.net/gh/jy02739244/iori-nav@master/image/fengge1_1.png',
 };
 
 /**

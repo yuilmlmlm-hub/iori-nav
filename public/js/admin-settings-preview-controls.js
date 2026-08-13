@@ -49,6 +49,8 @@
       document.getElementById('cardStyle1Preview'),
       document.getElementById('cardStyle2Preview'),
       document.getElementById('cardStyle3Preview'),
+      document.getElementById('cardStyle4Preview'),
+      document.getElementById('cardStyle5Preview'),
     ].forEach(card => {
       if (!card) return;
       card.style.setProperty('--card-radius', radius + 'px');
@@ -114,37 +116,40 @@
     const preview1 = document.getElementById('cardStyle1PreviewContainer');
     const preview2 = document.getElementById('cardStyle2PreviewContainer');
     const preview3 = document.getElementById('cardStyle3PreviewContainer');
+    const preview4 = document.getElementById('cardStyle4PreviewContainer');
+    const preview5 = document.getElementById('cardStyle5PreviewContainer');
     if (preview1) preview1.style.maxWidth = width;
     if (preview2) preview2.style.maxWidth = width;
     if (preview3) preview3.style.maxWidth = width;
+    if (preview4) preview4.style.maxWidth = width;
+    if (preview5) preview5.style.maxWidth = width;
     render.schedulePreviewRenderForDevice('desktop');
   }
 
 
  function syncCardContentHideOptions(device, style) {
     const isStyle3 = style === 'style3';
+    const isMediaStyle = style === 'style4' || style === 'style5';
     if (device === 'mobile') {
       document.getElementById('mobileStyle3FixedHideHint')?.classList.toggle('hidden', !isStyle3);
+      document.getElementById('mobileMediaStyleHint')?.classList.toggle('hidden', !isMediaStyle);
       [
         'mobileHideCategoryOption',
         'mobileHideDescOption',
         'mobileHideLinksOption',
         'mobileCardDescStylePanel',
-      ].forEach((id) => {
-        document.getElementById(id)?.classList.toggle('hidden', isStyle3);
-      });
+      ].forEach((id) => document.getElementById(id)?.classList.toggle('hidden', isStyle3));
       return;
     }
 
     document.getElementById('desktopStyle3FixedHideHint')?.classList.toggle('hidden', !isStyle3);
+    document.getElementById('desktopMediaStyleHint')?.classList.toggle('hidden', !isMediaStyle);
     [
       'hideCategoryOption',
       'hideDescOption',
       'hideLinksOption',
       'desktopCardDescStylePanel',
-    ].forEach((id) => {
-      document.getElementById(id)?.classList.toggle('hidden', isStyle3);
-    });
+    ].forEach((id) => document.getElementById(id)?.classList.toggle('hidden', isStyle3));
   }
 
  function selectCardStyle(style) {
@@ -154,16 +159,24 @@
     const btn1 = document.getElementById('btnStyle1');
     const btn2 = document.getElementById('btnStyle2');
     const btn3 = document.getElementById('btnStyle3');
+    const btn4 = document.getElementById('btnStyle4');
+    const btn5 = document.getElementById('btnStyle5');
     const preview1 = document.getElementById('cardStyle1PreviewContainer');
     const preview2 = document.getElementById('cardStyle2PreviewContainer');
     const preview3 = document.getElementById('cardStyle3PreviewContainer');
+    const preview4 = document.getElementById('cardStyle4PreviewContainer');
+    const preview5 = document.getElementById('cardStyle5PreviewContainer');
 
     if (!btn1 || !btn2 || !btn3 || !preview1 || !preview2 || !preview3) return;
 
-    [btn1, btn2, btn3].forEach(btn => {
+    [btn1, btn2, btn3, btn4, btn5].forEach(btn => {
+      if (!btn) return;
       btn.className = 'card-style-btn card-segment-option';
     });
-    [preview1, preview2, preview3].forEach(preview => preview.classList.add('hidden'));
+    [preview1, preview2, preview3, preview4, preview5].forEach(preview => {
+      if (!preview) return;
+      preview.classList.add('hidden');
+    });
 
     if (style === 'style2') {
       btn2.classList.add('active');
@@ -171,6 +184,12 @@
     } else if (style === 'style3') {
       btn3.classList.add('active');
       preview3.classList.remove('hidden');
+    } else if (style === 'style4') {
+      btn4?.classList.add('active');
+      preview4?.classList.remove('hidden');
+    } else if (style === 'style5') {
+      btn5?.classList.add('active');
+      preview5?.classList.remove('hidden');
     } else {
       btn1.classList.add('active');
       preview1.classList.remove('hidden');
@@ -192,9 +211,12 @@
     const btn1 = document.getElementById('mobileBtnStyle1');
     const btn2 = document.getElementById('mobileBtnStyle2');
     const btn3 = document.getElementById('mobileBtnStyle3');
+    const btn4 = document.getElementById('mobileBtnStyle4');
+    const btn5 = document.getElementById('mobileBtnStyle5');
     if (!btn1 || !btn2 || !btn3) return;
 
-    [btn1, btn2, btn3].forEach(btn => {
+    [btn1, btn2, btn3, btn4, btn5].forEach(btn => {
+      if (!btn) return;
       btn.className = 'card-style-btn card-segment-option';
     });
 
@@ -202,6 +224,10 @@
       btn2.classList.add('active');
     } else if (style === 'style3') {
       btn3.classList.add('active');
+    } else if (style === 'style4') {
+      btn4?.classList.add('active');
+    } else if (style === 'style5') {
+      btn5?.classList.add('active');
     } else {
       btn1.classList.add('active');
     }
@@ -383,9 +409,13 @@
     document.getElementById('btnStyle1')?.addEventListener('click', () => selectCardStyle('style1'));
     document.getElementById('btnStyle2')?.addEventListener('click', () => selectCardStyle('style2'));
     document.getElementById('btnStyle3')?.addEventListener('click', () => selectCardStyle('style3'));
+    document.getElementById('btnStyle4')?.addEventListener('click', () => selectCardStyle('style4'));
+    document.getElementById('btnStyle5')?.addEventListener('click', () => selectCardStyle('style5'));
     document.getElementById('mobileBtnStyle1')?.addEventListener('click', () => selectMobileCardStyle('style1'));
     document.getElementById('mobileBtnStyle2')?.addEventListener('click', () => selectMobileCardStyle('style2'));
     document.getElementById('mobileBtnStyle3')?.addEventListener('click', () => selectMobileCardStyle('style3'));
+    document.getElementById('mobileBtnStyle4')?.addEventListener('click', () => selectMobileCardStyle('style4'));
+    document.getElementById('mobileBtnStyle5')?.addEventListener('click', () => selectMobileCardStyle('style5'));
     document.querySelectorAll('.card-animation-option[data-animation-device="desktop"]').forEach(option => {
       option.addEventListener('click', () => {
         if (!refs.cardAnimationSelect) return;

@@ -64,9 +64,13 @@
       const mobileGridClass = cols === '1' ? 'grid-cols-1' : (cols === '3' ? 'grid-cols-3' : 'grid-cols-2');
       const mobileCardStyleClass = cardConfig.cardStyle === 'style3'
         ? 'mobile-card-style3'
-        : (cardConfig.cardStyle === 'style2' ? 'mobile-card-style2' : 'mobile-card-style1');
+        : (cardConfig.cardStyle === 'style4'
+          ? 'mobile-card-style4'
+          : (cardConfig.cardStyle === 'style5'
+            ? 'mobile-card-style5'
+            : (cardConfig.cardStyle === 'style2' ? 'mobile-card-style2' : 'mobile-card-style1')));
       sitesGrid.classList.remove('grid-cols-1', 'grid-cols-2', 'grid-cols-3');
-      sitesGrid.classList.remove('mobile-card-style1', 'mobile-card-style2', 'mobile-card-style3');
+      sitesGrid.classList.remove('mobile-card-style1', 'mobile-card-style2', 'mobile-card-style3', 'mobile-card-style4', 'mobile-card-style5');
       sitesGrid.classList.add(mobileGridClass);
       sitesGrid.classList.add(mobileCardStyleClass);
     }
@@ -277,7 +281,30 @@
 
         card.setAttribute('data-id', site.id);
 
-        card.innerHTML = `
+        const mediaHtml = cardConfig.cardStyle === 'style4'
+          ? (site.hasCardImage
+            ? `<div class="site-card-media"><img src="${site.cardImageHtml}" alt="${site.nameHtml}" ${imgLoadingAttrs}></div>`
+            : `<div class="site-card-media site-card-media-fallback">${site.cardInitialHtml}</div>`)
+          : (cardConfig.cardStyle === 'style5'
+            ? (site.hasCardVideo
+              ? `<div class="site-card-media"><video src="${site.cardVideoHtml}" ${site.hasCardImage ? `poster="${site.cardImageHtml}"` : ''} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video></div>`
+              : `<div class="site-card-media site-card-media-fallback">${site.cardInitialHtml}</div>`)
+            : '');
+
+        const mediaCardHtml = mediaHtml ? `
+          ${mediaHtml}
+          <div class="site-card-media-overlay">
+            <a href="${site.urlHtml || '#'}" ${site.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
+              <div class="site-card-media-top">
+                <h3 class="${cardConfig.titleClass}" title="${site.nameHtml}">${site.nameHtml}</h3>
+                ${categoryHtml}
+              </div>
+            </a>
+            <div class="site-card-media-bottom">
+              ${descHtml}
+              ${linksHtml}
+            </div>
+          </div>` : `
         <div class="site-card-content">
           <a href="${site.urlHtml || '#'}" ${site.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
             <div class="flex items-start">
@@ -292,8 +319,9 @@
             ${descHtml}
           </a>
           ${linksHtml}
-        </div>
-        `;
+        </div>`;
+
+        card.innerHTML = mediaCardHtml;
 
         sitesGrid.appendChild(card);
       });

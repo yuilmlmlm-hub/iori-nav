@@ -13,15 +13,20 @@ test('style default wallpapers are distinct per card style', () => {
   assert.equal(typeof STYLE_DEFAULT_WALLPAPERS.style1, 'string');
   assert.equal(typeof STYLE_DEFAULT_WALLPAPERS.style2, 'string');
   assert.equal(typeof STYLE_DEFAULT_WALLPAPERS.style3, 'string');
+  assert.equal(typeof STYLE_DEFAULT_WALLPAPERS.style4, 'string');
+  assert.equal(typeof STYLE_DEFAULT_WALLPAPERS.style5, 'string');
   assert.notEqual(STYLE_DEFAULT_WALLPAPERS.style1, STYLE_DEFAULT_WALLPAPERS.style2);
   assert.notEqual(STYLE_DEFAULT_WALLPAPERS.style2, STYLE_DEFAULT_WALLPAPERS.style3);
   assert.notEqual(STYLE_DEFAULT_WALLPAPERS.style1, STYLE_DEFAULT_WALLPAPERS.style3);
+  assert.notEqual(STYLE_DEFAULT_WALLPAPERS.style4, STYLE_DEFAULT_WALLPAPERS.style5);
 });
 
 test('resolveWallpaperUrl prefers custom wallpaper over style default', () => {
   assert.equal(resolveWallpaperUrl('https://example.com/a.jpg', 'style3'), 'https://example.com/a.jpg');
   assert.equal(resolveWallpaperUrl('', 'style2'), STYLE_DEFAULT_WALLPAPERS.style2);
   assert.equal(getStyleDefaultWallpaper('style3'), STYLE_DEFAULT_WALLPAPERS.style3);
+  assert.equal(getStyleDefaultWallpaper('style4'), STYLE_DEFAULT_WALLPAPERS.style4);
+  assert.equal(getStyleDefaultWallpaper('style5'), STYLE_DEFAULT_WALLPAPERS.style5);
 });
 
 test('frontend wallpaper-defaults.js stays in sync with server source', () => {
@@ -37,6 +42,8 @@ test('frontend wallpaper-defaults.js stays in sync with server source', () => {
   assert.equal(frontend.STYLE_DEFAULT_WALLPAPERS.style1, STYLE_DEFAULT_WALLPAPERS.style1);
   assert.equal(frontend.STYLE_DEFAULT_WALLPAPERS.style2, STYLE_DEFAULT_WALLPAPERS.style2);
   assert.equal(frontend.STYLE_DEFAULT_WALLPAPERS.style3, STYLE_DEFAULT_WALLPAPERS.style3);
+  assert.equal(frontend.STYLE_DEFAULT_WALLPAPERS.style4, STYLE_DEFAULT_WALLPAPERS.style4);
+  assert.equal(frontend.STYLE_DEFAULT_WALLPAPERS.style5, STYLE_DEFAULT_WALLPAPERS.style5);
   assert.equal(frontend.resolveWallpaperUrl('', 'style1'), STYLE_DEFAULT_WALLPAPERS.style1);
   assert.equal(frontend.resolveWallpaperUrl('https://example.com/x.jpg', 'style3'), 'https://example.com/x.jpg');
 });

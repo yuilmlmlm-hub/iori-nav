@@ -5,6 +5,8 @@ export const INPUT_LIMITS = {
   bookmarkName: 120,
   bookmarkUrl: 2048,
   bookmarkLogo: 2048,
+  bookmarkCardImage: 2048,
+  bookmarkCardVideo: 2048,
   bookmarkDesc: 1000,
   importCategories: 2000,
   importSites: 10000,
@@ -84,6 +86,14 @@ export function normalizeOptionalBookmarkUrl(value) {
 
 export function normalizeBookmarkLogo(value, options = {}) {
   return normalizeOptionalText(value, 'Logo', INPUT_LIMITS.bookmarkLogo, options);
+}
+
+export function normalizeBookmarkCardImage(value, options = {}) {
+  return normalizeOptionalText(value, '卡片图片', INPUT_LIMITS.bookmarkCardImage, options);
+}
+
+export function normalizeBookmarkCardVideo(value, options = {}) {
+  return normalizeOptionalText(value, '卡片视频', INPUT_LIMITS.bookmarkCardVideo, options);
 }
 
 export function normalizeBookmarkDesc(value, options = {}) {

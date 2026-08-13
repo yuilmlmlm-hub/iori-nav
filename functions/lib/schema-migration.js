@@ -39,11 +39,23 @@ async function runIncrementalMigrations(env) {
   if (!sitesCols.has('is_private')) {
     alterStatements.push(env.NAV_DB.prepare('ALTER TABLE sites ADD COLUMN is_private INTEGER DEFAULT 0'));
   }
+  if (!sitesCols.has('card_image')) {
+    alterStatements.push(env.NAV_DB.prepare('ALTER TABLE sites ADD COLUMN card_image TEXT'));
+  }
+  if (!sitesCols.has('card_video')) {
+    alterStatements.push(env.NAV_DB.prepare('ALTER TABLE sites ADD COLUMN card_video TEXT'));
+  }
   if (sitesMissingCatalogName) {
     alterStatements.push(env.NAV_DB.prepare('ALTER TABLE sites ADD COLUMN catelog_name TEXT'));
   }
   if (pendingMissingCatalogName) {
     alterStatements.push(env.NAV_DB.prepare('ALTER TABLE pending_sites ADD COLUMN catelog_name TEXT'));
+  }
+  if (!pendingCols.has('card_image')) {
+    alterStatements.push(env.NAV_DB.prepare('ALTER TABLE pending_sites ADD COLUMN card_image TEXT'));
+  }
+  if (!pendingCols.has('card_video')) {
+    alterStatements.push(env.NAV_DB.prepare('ALTER TABLE pending_sites ADD COLUMN card_video TEXT'));
   }
   if (!categoryCols.has('is_private')) {
     alterStatements.push(env.NAV_DB.prepare('ALTER TABLE category ADD COLUMN is_private INTEGER DEFAULT 0'));

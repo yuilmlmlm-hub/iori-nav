@@ -1,7 +1,7 @@
 // functions/api/pending/[id].js
 import { isAdminAuthenticated, errorResponse, jsonResponse, markHomeCacheDirty, normalizeSortOrder } from '../../_middleware';
-import { buildFaviconUrl, getUrlMatchCandidates, normalizeUrlForStorage } from '../../lib/utils';
-import { normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
+import { buildFaviconUrl, getUrlMatchCandidates, normalizeUrlForStorage, sanitizeUrl } from '../../lib/utils';
+import { normalizeBookmarkCardImage, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
 
 export async function onRequestPut(context) {
   const { request, env, params } = context;
@@ -50,11 +50,19 @@ export async function onRequestPut(context) {
     const descResult = normalizeBookmarkDesc(getField('desc', config.desc), { nullIfEmpty: true });
     if (!descResult.ok) return errorResponse(descResult.message, 400);
 
+    const cardImageResult = normalizeBookmarkCardImage(getField('card_image', config.card_image), { nullIfEmpty: true });
+    if (!cardImageResult.ok) return errorResponse(cardImageResult.message, 400);
+
+    const cardVideoResult = normalizeBookmarkCardVideo(getField('card_video', config.card_video), { nullIfEmpty: true });
+    if (!cardVideoResult.ok) return errorResponse(cardVideoResult.message, 400);
+
     const sanitizedName = nameResult.value;
     const rawUrl = urlResult.value;
     const sanitizedUrl = normalizeUrlForStorage(rawUrl);
     let sanitizedLogo = logoResult.value;
     const sanitizedDesc = descResult.value;
+    const sanitizedCardImage = sanitizeUrl(cardImageResult.value);
+    const sanitizedCardVideo = sanitizeUrl(cardVideoResult.value);
     const sortOrderValue = hasField('sort_order') ? normalizeSortOrder(updateData.sort_order) : 9999;
     const isPrivateValue = getField('is_private', false) ? 1 : 0;
 
@@ -83,9 +91,9 @@ export async function onRequestPut(context) {
     const finalIsPrivate = category.is_private === 1 ? 1 : isPrivateValue;
 
     await env.NAV_DB.prepare(`
-      INSERT INTO sites (name, url, logo, desc, catelog_id, catelog_name, sort_order, is_private)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, catelogId, category.catelog, sortOrderValue, finalIsPrivate).run();
+      INSERT INTO sites (name, url, logo, desc, card_image, card_video, catelog_id, catelog_name, sort_order, is_private)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, catelogId, category.catelog, sortOrderValue, finalIsPrivate).run();
     
     await env.NAV_DB.prepare('DELETE FROM pending_sites WHERE id = ?').bind(id).run();
 

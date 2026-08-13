@@ -29,6 +29,7 @@ export function buildCardTemplateConfig(settings = {}, device = 'desktop') {
   const isMobile = device === 'mobile';
   const cardStyle = getDeviceSetting(settings, device, 'layout_card_style', isMobile ? 'style2' : 'style1') || (isMobile ? 'style2' : 'style1');
   const isNavigationTileStyle = cardStyle === 'style3';
+  const isMediaCardStyle = cardStyle === 'style4' || cardStyle === 'style5';
   const hideDesc = isNavigationTileStyle || getDeviceSetting(settings, device, 'layout_hide_desc', isMobile) === true;
   const hideLinks = isNavigationTileStyle || getDeviceSetting(settings, device, 'layout_hide_links', isMobile) === true;
   const hideCategory = isNavigationTileStyle || getDeviceSetting(settings, device, 'layout_hide_category', false) === true;
@@ -68,7 +69,14 @@ export function buildCardTemplateConfig(settings = {}, device = 'desktop') {
       ? 'site-card group h-full flex flex-col overflow-hidden transition-all'
       : 'site-card group h-full flex flex-col bg-white border border-primary-100/60 shadow-sm overflow-hidden dark:bg-gray-800 dark:border-gray-700',
     frostedClass: enableFrostedGlass ? 'frosted-glass-effect' : '',
-    cardStyleClass: cardStyle === 'style2' ? 'style-2' : (isNavigationTileStyle ? 'style-3' : ''),
+    cardStyleClass: cardStyle === 'style2'
+      ? 'style-2'
+      : (isNavigationTileStyle
+        ? 'style-3'
+        : (cardStyle === 'style4'
+          ? 'style-4'
+          : (cardStyle === 'style5' ? 'style-5' : ''))),
+    isMediaCardStyle,
     titleClass: 'site-title text-base font-medium text-gray-900 dark:text-gray-100 truncate transition-all duration-300 origin-left',
     descClass: 'mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2',
     categoryClass: 'site-category inline-flex items-center px-2 py-0.5 mt-1 rounded-full text-xs font-medium bg-secondary-100 text-primary-700 dark:bg-secondary-800 dark:text-primary-300',
@@ -88,6 +96,8 @@ export function buildCardViewModel(site) {
   const normalizedLogo = sanitizeUrl(site?.logo);
   const rawCatalog = site?.catelog_name || site?.catelog || '未分类';
   const rawDesc = site?.desc || '暂无描述';
+  const normalizedCardImage = sanitizeUrl(site?.card_image);
+  const normalizedCardVideo = sanitizeUrl(site?.card_video);
 
   return {
     id: site?.id,
@@ -98,6 +108,10 @@ export function buildCardViewModel(site) {
     urlHtml: escapeHTML(normalizedUrl),
     displayUrlHtml: escapeHTML(normalizedUrl || '未提供链接'),
     logoUrlHtml: escapeHTML(normalizedLogo),
+    cardImageHtml: escapeHTML(normalizedCardImage),
+    cardVideoHtml: escapeHTML(normalizedCardVideo),
+    hasCardImage: Boolean(normalizedCardImage),
+    hasCardVideo: Boolean(normalizedCardVideo),
     cardInitialHtml: escapeHTML((rawName.trim().charAt(0) || '站').toUpperCase()),
     hasValidUrl: Boolean(normalizedUrl),
     searchText: buildSearchText(site, normalizedUrl),

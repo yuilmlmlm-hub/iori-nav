@@ -1,7 +1,7 @@
 // functions/api/config/[id].js
 import { isAdminAuthenticated, errorResponse, jsonResponse, normalizeSortOrder, markHomeCacheDirty } from '../../_middleware';
-import { buildFaviconUrl, getUrlMatchCandidates, normalizeUrlForStorage } from '../../lib/utils';
-import { normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
+import { buildFaviconUrl, getUrlMatchCandidates, normalizeUrlForStorage, sanitizeUrl } from '../../lib/utils';
+import { normalizeBookmarkCardImage, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
 
 
 export async function onRequestGet(context) {
@@ -39,7 +39,7 @@ export async function onRequestPut(context) {
     }
 
     const config = await request.json();
-    const { name, url, logo, desc, catelog_id, sort_order, is_private } = config;
+    const { name, url, logo, desc, card_image, card_video, catelog_id, sort_order, is_private } = config;
 
     const nameResult = normalizeBookmarkName(name);
     if (!nameResult.ok) return errorResponse(nameResult.message, 400);
@@ -53,11 +53,19 @@ export async function onRequestPut(context) {
     const descResult = normalizeBookmarkDesc(desc, { nullIfEmpty: true });
     if (!descResult.ok) return errorResponse(descResult.message, 400);
 
+    const cardImageResult = normalizeBookmarkCardImage(card_image, { nullIfEmpty: true });
+    if (!cardImageResult.ok) return errorResponse(cardImageResult.message, 400);
+
+    const cardVideoResult = normalizeBookmarkCardVideo(card_video, { nullIfEmpty: true });
+    if (!cardVideoResult.ok) return errorResponse(cardVideoResult.message, 400);
+
     const sanitizedName = nameResult.value;
     const rawUrl = urlResult.value;
     const sanitizedUrl = normalizeUrlForStorage(rawUrl);
     let sanitizedLogo = logoResult.value;
     const sanitizedDesc = descResult.value;
+    const sanitizedCardImage = sanitizeUrl(cardImageResult.value);
+    const sanitizedCardVideo = sanitizeUrl(cardVideoResult.value);
     const sortOrderValue = normalizeSortOrder(sort_order);
     const isPrivateValue = is_private ? 1 : 0;
 
@@ -95,9 +103,9 @@ export async function onRequestPut(context) {
 
     const update = await env.NAV_DB.prepare(`
       UPDATE sites
-      SET name = ?, url = ?, logo = ?, desc = ?, catelog_id = ?, catelog_name = ?, sort_order = ?, is_private = ?, update_time = CURRENT_TIMESTAMP
+      SET name = ?, url = ?, logo = ?, desc = ?, card_image = ?, card_video = ?, catelog_id = ?, catelog_name = ?, sort_order = ?, is_private = ?, update_time = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, catelog_id, catelogName, sortOrderValue, finalIsPrivate, id).run();
+    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, catelog_id, catelogName, sortOrderValue, finalIsPrivate, id).run();
 
     const dirtyScope = (existing.is_private === 1 && finalIsPrivate === 1) ? 'private' : 'all';
     await markHomeCacheDirty(env, dirtyScope);

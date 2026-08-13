@@ -97,6 +97,122 @@ test('style three with frosted glass uses translucent treatment', () => {
   assert.match(html, /frosted-glass-effect/);
 });
 
+test('style four renders image-backed cards with description inside the media overlay', () => {
+  const settings = parseSettings([
+    { key: 'layout_card_style', value: 'style4' },
+    { key: 'layout_hide_desc', value: 'false' },
+    { key: 'layout_hide_links', value: 'false' },
+    { key: 'layout_hide_category', value: 'false' },
+  ]);
+
+  const { config, cards } = buildCardHydrationState([
+    {
+      id: 1,
+      name: 'Example',
+      url: 'https://example.com',
+      desc: 'Beautiful card',
+      catelog_name: 'Tools',
+      card_image: 'https://img.example.com/card.jpg',
+      card_video: '',
+    },
+  ], settings);
+  const html = renderSiteCards([
+    {
+      id: 1,
+      name: 'Example',
+      url: 'https://example.com',
+      desc: 'Beautiful card',
+      catelog_name: 'Tools',
+      card_image: 'https://img.example.com/card.jpg',
+    },
+  ], settings);
+
+  assert.equal(config.cardStyle, 'style4');
+  assert.equal(config.cardStyleClass, 'style-4');
+  assert.equal(config.isMediaCardStyle, true);
+  assert.equal(config.hideDesc, false);
+  assert.equal(cards[0].cardImageHtml, 'https://img.example.com/card.jpg');
+  assert.equal(cards[0].hasCardImage, true);
+  assert.equal(cards[0].hasCardVideo, false);
+  assert.match(html, /style-4/);
+  assert.match(html, /site-card-media/);
+  assert.match(html, /<img src="https:\/\/img\.example\.com\/card\.jpg"/);
+  assert.match(html, /site-card-media-overlay/);
+  assert.match(html, /Beautiful card/);
+});
+
+test('style five renders video-backed cards and falls back safely without media', () => {
+  const settings = parseSettings([
+    { key: 'layout_card_style', value: 'style5' },
+  ]);
+
+  const htmlWithVideo = renderSiteCards([
+    {
+      id: 1,
+      name: 'Example',
+      url: 'https://example.com',
+      desc: 'Moving card',
+      catelog_name: 'Tools',
+      card_video: 'https://v.example.com/card.mp4',
+      card_image: 'https://img.example.com/poster.jpg',
+    },
+  ], settings);
+  const htmlFallback = renderSiteCards([
+    {
+      id: 1,
+      name: 'Example',
+      url: 'https://example.com',
+      desc: 'Moving card',
+    },
+  ], settings);
+  const { config } = buildCardHydrationState([], settings);
+
+  assert.equal(config.cardStyleClass, 'style-5');
+  assert.equal(config.isMediaCardStyle, true);
+  assert.match(htmlWithVideo, /style-5/);
+  assert.match(htmlWithVideo, /<video src="https:\/\/v\.example\.com\/card\.mp4"/);
+  assert.match(htmlWithVideo, /poster="https:\/\/img\.example\.com\/poster\.jpg"/);
+  assert.match(htmlWithVideo, /autoplay muted loop playsinline/);
+  assert.match(htmlFallback, /site-card-media-fallback/);
+  assert.doesNotMatch(htmlFallback, /<video/);
+});
+
+test('media card URLs are sanitized before hydration', () => {
+  const { cards } = buildCardHydrationState([
+    {
+      id: 1,
+      name: 'Example',
+      url: 'https://example.com',
+      card_image: 'javascript:alert(1)',
+      card_video: 'data:text/html,x',
+    },
+  ], parseSettings([]));
+
+  assert.equal(cards[0].cardImageHtml, '');
+  assert.equal(cards[0].cardVideoHtml, '');
+  assert.equal(cards[0].hasCardImage, false);
+  assert.equal(cards[0].hasCardVideo, false);
+});
+
+test('media card CSS covers style four and five on home and admin preview', () => {
+  const homeCss = readFileSync('public/css/style.css', 'utf8');
+  const previewCss = readFileSync('public/css/admin-preview-cards.css', 'utf8');
+
+  assert.match(homeCss, /\.site-card\.style-4\s*[,{]/);
+  assert.match(homeCss, /\.site-card\.style-5\s*\{/);
+  assert.match(homeCss, /\.site-card\.style-4 \.site-card-media,/);
+  assert.match(homeCss, /\.site-card\.style-5 \.site-card-media\s*\{/);
+  assert.match(homeCss, /site-card-media-overlay/);
+  assert.match(homeCss, /site-card-media-fallback/);
+  assert.match(homeCss, /#sitesGrid\.desktop-card-style4/);
+  assert.match(homeCss, /#sitesGrid\.desktop-card-style5/);
+  assert.match(homeCss, /#sitesGrid\.mobile-card-style4/);
+  assert.match(homeCss, /#sitesGrid\.mobile-card-style5/);
+  assert.match(previewCss, /\.site-card\.style-4\s*[,{]/);
+  assert.match(previewCss, /\.site-card\.style-5\s*\{/);
+  assert.match(previewCss, /site-card-media-overlay/);
+});
+
 
 test('mobile style three has its own compact card config', () => {
   const settings = parseSettings([
