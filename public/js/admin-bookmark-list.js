@@ -235,6 +235,7 @@
     document.getElementById('editBookmarkDesc').value = config.desc;
     document.getElementById('editBookmarkCardImage').value = config.card_image || '';
     document.getElementById('editBookmarkCardVideo').value = config.card_video || '';
+    document.getElementById('editBookmarkCardStyle').value = config.card_style || '';
     document.getElementById('editBookmarkSortOrder').value = config.sort_order;
     document.getElementById('editBookmarkIsPrivate').checked = !!config.is_private;
     window.createCascadingDropdown('editBookmarkCatelogWrapper', 'editBookmarkCatelog', window.categoriesTree, config.catelog_id);

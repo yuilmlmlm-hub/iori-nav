@@ -2,7 +2,7 @@
 import { isSubmissionEnabled, errorResponse, jsonResponse, checkRateLimit } from '../../_middleware';
 import { normalizeUrlForStorage, sanitizeUrl } from '../../lib/utils';
 import { verifyTurnstileToken } from '../../lib/turnstile';
-import { normalizeBookmarkCardImage, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
+import { normalizeBookmarkCardImage, normalizeBookmarkCardStyle, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -20,7 +20,7 @@ export async function onRequestPost(context) {
 
   try {
     const config = await request.json();
-    const { name, url, logo, desc, card_image, card_video, catelog_id, turnstileToken } = config;
+    const { name, url, logo, desc, card_image, card_video, card_style, catelog_id, turnstileToken } = config;
 
     const turnstileResult = await verifyTurnstileToken(turnstileToken, env, ip);
     if (!turnstileResult.ok) {
@@ -45,6 +45,9 @@ export async function onRequestPost(context) {
     const cardVideoResult = normalizeBookmarkCardVideo(card_video, { nullIfEmpty: true });
     if (!cardVideoResult.ok) return errorResponse(cardVideoResult.message, 400);
 
+    const cardStyleResult = normalizeBookmarkCardStyle(card_style, { nullIfEmpty: true });
+    if (!cardStyleResult.ok) return errorResponse(cardStyleResult.message, 400);
+
     const sanitizedName = nameResult.value;
     const rawUrl = urlResult.value;
     const sanitizedUrl = normalizeUrlForStorage(rawUrl);
@@ -52,6 +55,7 @@ export async function onRequestPost(context) {
     const sanitizedDesc = descResult.value;
     const sanitizedCardImage = sanitizeUrl(cardImageResult.value);
     const sanitizedCardVideo = sanitizeUrl(cardVideoResult.value);
+    const sanitizedCardStyle = cardStyleResult.value || null;
 
     if (!catelog_id) {
       return errorResponse('Category is required', 400);
@@ -67,9 +71,9 @@ export async function onRequestPost(context) {
     const catelogName = categoryResult.catelog;
 
     await env.NAV_DB.prepare(`
-      INSERT INTO pending_sites (name, url, logo, desc, card_image, card_video, catelog_id, catelog_name)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, catelog_id, catelogName).run();
+      INSERT INTO pending_sites (name, url, logo, desc, card_image, card_video, card_style, catelog_id, catelog_name)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, sanitizedCardStyle, catelog_id, catelogName).run();
 
     return jsonResponse({
       code: 201,

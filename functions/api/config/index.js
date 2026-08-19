@@ -1,7 +1,7 @@
 // functions/api/config/index.js
 import { isAdminAuthenticated, errorResponse, jsonResponse, normalizeSortOrder, markHomeCacheDirty } from '../../_middleware';
 import { escapeLikePattern, buildFaviconUrl, getUrlMatchCandidates, normalizeUrlForStorage, parsePagination, sanitizeUrl } from '../../lib/utils';
-import { normalizeBookmarkCardImage, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
+import { normalizeBookmarkCardImage, normalizeBookmarkCardStyle, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
 
 const MAX_CONFIG_SEARCH_KEYWORD_LENGTH = 100;
 
@@ -72,7 +72,7 @@ export async function onRequestPost(context) {
 
   try {
     const config = await request.json();
-    const { name, url, logo, desc, card_image, card_video, catelogId, sort_order, is_private } = config;
+    const { name, url, logo, desc, card_image, card_video, card_style, catelogId, sort_order, is_private } = config;
     const iconAPI = env.ICON_API || 'https://faviconsnap.com/api/favicon?url=';
 
     const nameResult = normalizeBookmarkName(name);
@@ -93,6 +93,9 @@ export async function onRequestPost(context) {
     const cardVideoResult = normalizeBookmarkCardVideo(card_video, { nullIfEmpty: true });
     if (!cardVideoResult.ok) return errorResponse(cardVideoResult.message, 400);
 
+    const cardStyleResult = normalizeBookmarkCardStyle(card_style, { nullIfEmpty: true });
+    if (!cardStyleResult.ok) return errorResponse(cardStyleResult.message, 400);
+
     const sanitizedName = nameResult.value;
     const rawUrl = urlResult.value;
     const sanitizedUrl = normalizeUrlForStorage(rawUrl);
@@ -100,6 +103,7 @@ export async function onRequestPost(context) {
     const sanitizedDesc = descResult.value;
     const sanitizedCardImage = sanitizeUrl(cardImageResult.value);
     const sanitizedCardVideo = sanitizeUrl(cardVideoResult.value);
+    const sanitizedCardStyle = cardStyleResult.value || null;
     const sortOrderValue = normalizeSortOrder(sort_order);
     const isPrivateValue = is_private ? 1 : 0;
 
@@ -134,9 +138,9 @@ export async function onRequestPost(context) {
     }
 
     const insert = await env.NAV_DB.prepare(`
-      INSERT INTO sites (name, url, logo, desc, card_image, card_video, catelog_id, catelog_name, sort_order, is_private)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, catelogId, categoryResult.catelog, sortOrderValue, finalIsPrivate).run();
+      INSERT INTO sites (name, url, logo, desc, card_image, card_video, card_style, catelog_id, catelog_name, sort_order, is_private)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, sanitizedCardStyle, catelogId, categoryResult.catelog, sortOrderValue, finalIsPrivate).run();
 
     await markHomeCacheDirty(env, finalIsPrivate ? 'private' : 'all');
 

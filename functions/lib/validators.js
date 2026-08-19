@@ -96,6 +96,22 @@ export function normalizeBookmarkCardVideo(value, options = {}) {
   return normalizeOptionalText(value, '卡片视频', INPUT_LIMITS.bookmarkCardVideo, options);
 }
 
+export const CARD_STYLE_OPTIONS = ['style1', 'style2', 'style3', 'style4', 'style5'];
+
+/**
+ * 校验书签独立卡片风格：允许为空（跟随全局设置）或 style1 ~ style5。
+ */
+export function normalizeBookmarkCardStyle(value, options = {}) {
+  const text = normalizeText(value);
+  if (!text) {
+    return { ok: true, value: options.nullIfEmpty ? null : '' };
+  }
+  if (!CARD_STYLE_OPTIONS.includes(text)) {
+    return { ok: false, message: '无效的卡片风格' };
+  }
+  return { ok: true, value: text };
+}
+
 export function normalizeBookmarkDesc(value, options = {}) {
   return normalizeOptionalText(value, '描述', INPUT_LIMITS.bookmarkDesc, options);
 }

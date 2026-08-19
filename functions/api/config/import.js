@@ -3,6 +3,7 @@ import { isAdminAuthenticated, errorResponse, jsonResponse, normalizeSortOrder, 
 import { getUrlMatchCandidates, normalizeUrlForStorage, sanitizeUrl } from '../../lib/utils';
 import {
     normalizeBookmarkCardImage,
+    normalizeBookmarkCardStyle,
     normalizeBookmarkCardVideo,
     normalizeBookmarkDesc,
     normalizeBookmarkLogo,
@@ -311,8 +312,9 @@ export async function onRequestPost(context) {
         const descResult = normalizeBookmarkDesc(site.desc, { nullIfEmpty: true });
         const cardImageResult = normalizeBookmarkCardImage(site.card_image, { nullIfEmpty: true });
         const cardVideoResult = normalizeBookmarkCardVideo(site.card_video, { nullIfEmpty: true });
+        const cardStyleResult = normalizeBookmarkCardStyle(site.card_style, { nullIfEmpty: true });
 
-        if (!nameResult.ok || !urlResult.ok || !logoResult.ok || !descResult.ok || !cardImageResult.ok || !cardVideoResult.ok) {
+        if (!nameResult.ok || !urlResult.ok || !logoResult.ok || !descResult.ok || !cardImageResult.ok || !cardVideoResult.ok || !cardStyleResult.ok) {
             itemsSkipped++;
             continue;
         }
@@ -385,6 +387,7 @@ export async function onRequestPost(context) {
         const sanitizedDesc = descResult.value;
         const sanitizedCardImage = sanitizeUrl(cardImageResult.value);
         const sanitizedCardVideo = sanitizeUrl(cardVideoResult.value);
+        const sanitizedCardStyle = cardStyleResult.value || null;
         const sortOrderValue = normalizeSortOrder(site.sort_order);
         // 覆盖更新时，若导入数据未提供排序值，则保留已有书签的排序值
         const sortOrderUpdate = (site.sort_order === undefined || site.sort_order === null)
@@ -402,16 +405,16 @@ export async function onRequestPost(context) {
             processedUrls.add(dedupKey);
             // Update
             batchStmts.push(
-                db.prepare('UPDATE sites SET name=?, logo=?, desc=?, card_image=?, card_video=?, catelog_id=?, catelog_name=?, sort_order=COALESCE(?, sort_order), is_private=?, update_time=CURRENT_TIMESTAMP WHERE url=?')
-                  .bind(sanitizedName, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, newCatId, catNameForDb, sortOrderUpdate, finalIsPrivate, existingDbUrl)
+                db.prepare('UPDATE sites SET name=?, logo=?, desc=?, card_image=?, card_video=?, card_style=?, catelog_id=?, catelog_name=?, sort_order=COALESCE(?, sort_order), is_private=?, update_time=CURRENT_TIMESTAMP WHERE url=?')
+                  .bind(sanitizedName, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, sanitizedCardStyle, newCatId, catNameForDb, sortOrderUpdate, finalIsPrivate, existingDbUrl)
             );
             itemsUpdated++;
         } else {
             processedUrls.add(dedupKey);
             // Insert
             batchStmts.push(
-                db.prepare('INSERT INTO sites (name, url, logo, desc, card_image, card_video, catelog_id, catelog_name, sort_order, is_private) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-                  .bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, newCatId, catNameForDb, sortOrderValue, finalIsPrivate)
+                db.prepare('INSERT INTO sites (name, url, logo, desc, card_image, card_video, card_style, catelog_id, catelog_name, sort_order, is_private) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+                  .bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, sanitizedCardStyle, newCatId, catNameForDb, sortOrderValue, finalIsPrivate)
             );
             itemsAdded++;
         }

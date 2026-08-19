@@ -4,6 +4,7 @@
 import { normalizeUrlForStorage } from './utils';
 import {
     normalizeBookmarkCardImage,
+    normalizeBookmarkCardStyle,
     normalizeBookmarkCardVideo,
     normalizeBookmarkDesc,
     normalizeBookmarkLogo,
@@ -91,8 +92,9 @@ export function validateBookmarkExportForImport(data) {
         const desc = normalizeBookmarkDesc(site.desc, { nullIfEmpty: true });
         const cardImage = normalizeBookmarkCardImage(site.card_image, { nullIfEmpty: true });
         const cardVideo = normalizeBookmarkCardVideo(site.card_video, { nullIfEmpty: true });
+        const cardStyle = normalizeBookmarkCardStyle(site.card_style, { nullIfEmpty: true });
 
-        for (const result of [name, url, logo, desc, cardImage, cardVideo]) {
+        for (const result of [name, url, logo, desc, cardImage, cardVideo, cardStyle]) {
             if (!result.ok) return { ok: false, message: `${label}: ${result.message}` };
         }
 
@@ -127,7 +129,7 @@ export async function fetchBookmarkExport(env, options = {}) {
     const includePrivate = options.includePrivate === true;
 
     let categoryQuery = 'SELECT id, catelog, sort_order, parent_id, is_private FROM category';
-    let sitesQuery = 'SELECT id, name, url, logo, desc, card_image, card_video, catelog_id, sort_order, is_private FROM sites';
+    let sitesQuery = 'SELECT id, name, url, logo, desc, card_image, card_video, card_style, catelog_id, sort_order, is_private FROM sites';
 
     if (!includePrivate) {
         // 分类私密时导入/写入逻辑会把站点一并置为私密，因此这里按 is_private 过滤即可

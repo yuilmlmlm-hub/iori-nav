@@ -96,6 +96,7 @@ if (addBookmarkForm) {
     const desc = document.getElementById('addBookmarkDesc').value;
     const cardImage = document.getElementById('addBookmarkCardImage')?.value || '';
     const cardVideo = document.getElementById('addBookmarkCardVideo')?.value || '';
+    const cardStyle = document.getElementById('addBookmarkCardStyle')?.value || '';
     const catelogId = addBookmarkCatelogSelect.value;
     const sortOrder = document.getElementById('addBookmarkSortOrder').value;
     const isPrivate = document.getElementById('addBookmarkIsPrivate').checked;
@@ -116,6 +117,7 @@ if (addBookmarkForm) {
       desc: desc.trim(),
       card_image: cardImage.trim(),
       card_video: cardVideo.trim(),
+      card_style: cardStyle,
       catelogId: catelogId,
       is_private: isPrivate
     };

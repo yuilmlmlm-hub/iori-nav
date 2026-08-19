@@ -1,7 +1,7 @@
 // functions/lib/card-renderer.js
 // 渲染站点卡片网格 HTML
 
-import { buildCardTemplateConfig, buildCardViewModel } from './card-model';
+import { buildCardTemplateConfig, buildCardViewModel, resolveEffectiveCardStyle, getCardStyleClass } from './card-model';
 
 /**
  * 渲染站点卡片网格 HTML
@@ -17,9 +17,17 @@ export function renderSiteCards(sites, settings) {
     const isAboveFold = index < config.aboveFoldImageCount;
     const imgLoadingAttrs = isAboveFold ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"';
 
-    const descHtml = config.hideDesc ? '' : `<p class="${config.descClass}" title="${card.descHtml}">${card.descHtml}</p>`;
+    const effectiveStyle = resolveEffectiveCardStyle(config, card);
+    const isNavigationTileStyle = effectiveStyle === 'style3';
+    const isMediaCardStyle = effectiveStyle === 'style4' || effectiveStyle === 'style5';
+    const cardStyleClass = getCardStyleClass(effectiveStyle);
+    const hideDesc = isNavigationTileStyle || config.hideDesc;
+    const hideLinks = isNavigationTileStyle || config.hideLinks;
+    const hideCategory = isNavigationTileStyle || config.hideCategory;
 
-    const linksHtml = config.hideLinks ? '' : `
+    const descHtml = hideDesc ? '' : `<p class="${config.descClass}" title="${card.descHtml}">${card.descHtml}</p>`;
+
+    const linksHtml = hideLinks ? '' : `
       <div class="${config.linkRowClass}">
         <span class="${config.urlTextClass}" title="${card.displayUrlHtml}">${card.displayUrlHtml}</span>
         <button class="${config.copyButtonBaseClass} ${card.hasValidUrl ? config.copyButtonEnabledClass : config.copyButtonDisabledClass}" data-url="${card.urlHtml}" ${card.hasValidUrl ? '' : 'disabled'}>
@@ -29,13 +37,13 @@ export function renderSiteCards(sites, settings) {
         </button>
       </div>`;
 
-    const categoryHtml = config.hideCategory ? '' : `
+    const categoryHtml = hideCategory ? '' : `
       <span class="${config.categoryClass}">
         ${card.catalogHtml}
       </span>`;
 
-    if (config.isMediaCardStyle) {
-      const mediaHtml = config.cardStyle === 'style4'
+    if (isMediaCardStyle) {
+      const mediaHtml = effectiveStyle === 'style4'
         ? (card.hasCardImage
           ? `<div class="site-card-media"><img src="${card.cardImageHtml}" alt="${card.nameHtml}" ${imgLoadingAttrs}></div>`
           : `<div class="site-card-media site-card-media-fallback">${card.cardInitialHtml}</div>`)
@@ -44,7 +52,7 @@ export function renderSiteCards(sites, settings) {
           : `<div class="site-card-media site-card-media-fallback">${card.cardInitialHtml}</div>`);
 
       return `
-        <div class="${config.baseCardClass} ${config.frostedClass} ${config.cardStyleClass} card-anim-enter" data-id="${card.id}">
+        <div class="${config.baseCardClass} ${config.frostedClass} ${cardStyleClass} card-anim-enter" data-id="${card.id}">
           ${mediaHtml}
           <div class="site-card-media-overlay">
             <a href="${card.urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
@@ -62,7 +70,7 @@ export function renderSiteCards(sites, settings) {
     }
 
     return `
-      <div class="${config.baseCardClass} ${config.frostedClass} ${config.cardStyleClass} card-anim-enter" data-id="${card.id}">
+      <div class="${config.baseCardClass} ${config.frostedClass} ${cardStyleClass} card-anim-enter" data-id="${card.id}">
         <div class="site-card-content">
           <a href="${card.urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
             <div class="flex items-start">

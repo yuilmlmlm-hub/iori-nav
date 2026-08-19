@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
-import { buildCardHydrationState } from '../functions/lib/card-model.js';
+import { buildCardHydrationState, resolveEffectiveCardStyle, getCardStyleClass } from '../functions/lib/card-model.js';
 import { renderSiteCards } from '../functions/lib/card-renderer.js';
 import { renderHorizontalMenu, renderVerticalMenu } from '../functions/lib/menu-renderer.js';
 import { parseSettings } from '../functions/lib/settings-parser.js';
@@ -66,9 +66,9 @@ test('style three renders compact navigation tiles and hides secondary content',
 
   assert.equal(config.cardStyle, 'style3');
   assert.equal(config.cardStyleClass, 'style-3');
-  assert.equal(config.hideDesc, true);
-  assert.equal(config.hideLinks, true);
-  assert.equal(config.hideCategory, true);
+  assert.equal(config.hideDesc, false);
+  assert.equal(config.hideLinks, false);
+  assert.equal(config.hideCategory, false);
   assert.match(config.baseCardClass, /bg-white/);
   assert.equal(config.frostedClass, '');
   assert.match(html, /style-3/);
@@ -227,9 +227,99 @@ test('mobile style three has its own compact card config', () => {
   ], settings);
 
   assert.equal(configs.mobile.cardStyleClass, 'style-3');
-  assert.equal(configs.mobile.hideDesc, true);
-  assert.equal(configs.mobile.hideLinks, true);
-  assert.equal(configs.mobile.hideCategory, true);
+  assert.equal(configs.mobile.hideDesc, false);
+  assert.equal(configs.mobile.hideLinks, false);
+  assert.equal(configs.mobile.hideCategory, false);
+});
+
+test('per-bookmark card style overrides the global style on SSR', () => {
+  const settings = parseSettings([
+    { key: 'layout_card_style', value: 'style1' },
+    { key: 'layout_hide_desc', value: 'false' },
+  ]);
+
+  const compactHtml = renderSiteCards([
+    { id: 1, name: 'Compact', url: 'https://example.com', desc: 'Hidden desc', catelog_name: 'Tools', card_style: 'style3' },
+  ], settings);
+  const plainHtml = renderSiteCards([
+    { id: 2, name: 'Plain', url: 'https://example.org', desc: 'Visible desc', catelog_name: 'Tools' },
+  ], settings);
+
+  assert.match(compactHtml, /class="[^"]*style-3[^"]*"[^>]*data-id="1"/);
+  assert.doesNotMatch(compactHtml, /Hidden desc/);
+  assert.doesNotMatch(compactHtml, /copy-btn/);
+  assert.match(plainHtml, /data-id="2"/);
+  assert.match(plainHtml, /Visible desc/);
+  assert.match(plainHtml, /copy-btn/);
+  assert.doesNotMatch(plainHtml, /class="[^"]*style-3[^"]*"/);
+});
+
+test('a style-one bookmark keeps secondary content under a global style three', () => {
+  const settings = parseSettings([
+    { key: 'layout_card_style', value: 'style3' },
+    { key: 'layout_hide_desc', value: 'false' },
+  ]);
+
+  const html = renderSiteCards([
+    { id: 1, name: 'Custom', url: 'https://example.com', desc: 'Keep me', catelog_name: 'Tools', card_style: 'style1' },
+  ], settings);
+
+  assert.match(html, /data-id="1"[\s\S]*?site-card-content/);
+  assert.match(html, /Keep me/);
+  assert.match(html, /copy-btn/);
+  assert.doesNotMatch(html, /class="[^"]*style-3[^"]*"[^>]*data-id="1"/);
+});
+
+test('per-bookmark media styles render regardless of the global style', () => {
+  const settings = parseSettings([
+    { key: 'layout_card_style', value: 'style1' },
+  ]);
+
+  const html = renderSiteCards([
+    {
+      id: 1,
+      name: 'Image Card',
+      url: 'https://example.com',
+      desc: 'Desc',
+      catelog_name: 'Tools',
+      card_style: 'style4',
+      card_image: 'https://img.example.com/card.jpg',
+    },
+    {
+      id: 2,
+      name: 'Video Card',
+      url: 'https://example.org',
+      desc: 'Desc',
+      catelog_name: 'Tools',
+      card_style: 'style5',
+      card_video: 'https://v.example.com/card.mp4',
+    },
+  ], settings);
+
+  assert.match(html, /class="[^"]*style-4[^"]*"[^>]*data-id="1"/);
+  assert.match(html, /site-card-media"><img src="https:\/\/img\.example\.com\/card\.jpg"/);
+  assert.match(html, /class="[^"]*style-5[^"]*"[^>]*data-id="2"/);
+  assert.match(html, /<video src="https:\/\/v\.example\.com\/card\.mp4"/);
+});
+
+test('hydration exposes the per-bookmark style and resolves effective style', () => {
+  const settings = parseSettings([
+    { key: 'layout_card_style', value: 'style2' },
+  ]);
+  const { config, cards } = buildCardHydrationState([
+    { id: 1, name: 'A', url: 'https://a.example', card_style: 'style4' },
+    { id: 2, name: 'B', url: 'https://b.example', card_style: 'not-a-style' },
+    { id: 3, name: 'C', url: 'https://c.example' },
+  ], settings);
+
+  assert.equal(cards[0].cardStyle, 'style4');
+  assert.equal(cards[1].cardStyle, '');
+  assert.equal(cards[2].cardStyle, '');
+  assert.equal(resolveEffectiveCardStyle(config, cards[0]), 'style4');
+  assert.equal(resolveEffectiveCardStyle(config, cards[1]), 'style2');
+  assert.equal(resolveEffectiveCardStyle(config, cards[2]), 'style2');
+  assert.equal(getCardStyleClass('style4'), 'style-4');
+  assert.equal(getCardStyleClass('style1'), '');
 });
 
 test('card hydration state shares sanitization and render config', () => {

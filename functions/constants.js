@@ -18,13 +18,13 @@
  */
 
 // 数据库 Schema 版本 - 修改此值会触发迁移
-export const SCHEMA_VERSION = 'v6';
+export const SCHEMA_VERSION = 'v7';
 
 // 上一个数据库 Schema 版本 - 仅用于首次迁移成功后 best-effort 清理旧迁移标记
-export const PREVIOUS_SCHEMA_VERSION = 'v5';
+export const PREVIOUS_SCHEMA_VERSION = 'v6';
 
 // 首页 HTML 缓存版本 - 修改此值会强制刷新首页缓存
-export const HOME_CACHE_VERSION = 'v38';
+export const HOME_CACHE_VERSION = 'v39';
 
 // 首页 HTML 缓存与 dirty 标记 TTL（30 天）
 export const HOME_CACHE_TTL = 2592000;
@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS sites (
   desc TEXT,
   card_image TEXT,
   card_video TEXT,
+  card_style TEXT,
   catelog_id INTEGER NOT NULL,
   catelog_name TEXT,
   sort_order INTEGER NOT NULL DEFAULT 9999,
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS pending_sites (
   desc TEXT,
   card_image TEXT,
   card_video TEXT,
+  card_style TEXT,
   catelog_id INTEGER NOT NULL,
   catelog_name TEXT,
   create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP

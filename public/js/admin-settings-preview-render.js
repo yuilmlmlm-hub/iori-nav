@@ -3,6 +3,7 @@
   const shared = ns.previewShared;
   const data = ns.previewData;
   const nav = ns.previewNav;
+  const CARD_STYLE_OPTIONS = ['style1', 'style2', 'style3', 'style4', 'style5'];
 
  let livePreviewFrame = null;
 
@@ -129,8 +130,11 @@
     const hideCopyText = shared.shouldHideCopyTextForPreview(settings.previewDevice, settings.gridCols);
 
     grid.innerHTML = cards.map(card => {
-      const isNavigationTileStyle = settings.cardStyle === 'style3';
-      const isMediaCardStyle = settings.cardStyle === 'style4' || settings.cardStyle === 'style5';
+      const effectiveStyle = CARD_STYLE_OPTIONS.includes(card.cardStyle)
+        ? card.cardStyle
+        : (CARD_STYLE_OPTIONS.includes(settings.cardStyle) ? settings.cardStyle : 'style1');
+      const isNavigationTileStyle = effectiveStyle === 'style3';
+      const isMediaCardStyle = effectiveStyle === 'style4' || effectiveStyle === 'style5';
       const hideCardCategory = isNavigationTileStyle || settings.hideCardCategory;
       const hideCardDesc = isNavigationTileStyle || settings.hideCardDesc;
       const hideCardLinks = isNavigationTileStyle || settings.hideCardLinks;
@@ -151,13 +155,13 @@
         'overflow-hidden',
         'transition-all',
         settings.frosted ? '' : 'bg-white border border-primary-100/60 shadow-sm',
-        settings.cardStyle === 'style2'
+        effectiveStyle === 'style2'
           ? 'style-2'
           : (isNavigationTileStyle
             ? 'style-3'
-            : (settings.cardStyle === 'style4'
+            : (effectiveStyle === 'style4'
               ? 'style-4'
-              : (settings.cardStyle === 'style5' ? 'style-5' : ''))),
+              : (effectiveStyle === 'style5' ? 'style-5' : ''))),
         settings.frosted ? 'frosted frosted-glass-effect' : '',
         hideCardDesc ? 'is-desc-hidden' : '',
         hideCardLinks ? 'is-links-hidden' : '',
@@ -183,7 +187,7 @@
       if (isMediaCardStyle) {
         const cardImage = card.cardImage ? shared.escapeHTML(card.cardImage) : '';
         const cardVideo = card.cardVideo ? shared.escapeHTML(card.cardVideo) : '';
-        const mediaHtml = settings.cardStyle === 'style4'
+        const mediaHtml = effectiveStyle === 'style4'
           ? (cardImage
             ? `<div class="site-card-media"><img src="${cardImage}" alt="${nameHtml}" loading="lazy" decoding="async"></div>`
             : `<div class="site-card-media site-card-media-fallback">${initial}</div>`)

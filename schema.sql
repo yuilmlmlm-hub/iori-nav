@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS sites (
   desc TEXT,
   card_image TEXT,
   card_video TEXT,
+  card_style TEXT,
   catelog_id INTEGER NOT NULL,
   catelog_name TEXT,
   sort_order INTEGER NOT NULL DEFAULT 9999,
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS pending_sites (
   desc TEXT,
   card_image TEXT,
   card_video TEXT,
+  card_style TEXT,
   catelog_id INTEGER NOT NULL,
   catelog_name TEXT,
   create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP

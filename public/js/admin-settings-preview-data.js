@@ -2,7 +2,8 @@
   const ns = window.AdminSettings = window.AdminSettings || {};
   const shared = ns.previewShared;
 
- const FALLBACK_CATEGORIES = ['工具', '搜索', '设计', '开发', '阅读', '影音'];
+const FALLBACK_CATEGORIES = ['工具', '搜索', '设计', '开发', '阅读', '影音'];
+const CARD_STYLE_OPTIONS = ['style1', 'style2', 'style3', 'style4', 'style5'];
 
  const PREVIEW_CARD_PAGE_SIZE = 200;
 
@@ -37,6 +38,9 @@
       desc: String(item?.desc || '暂无描述').trim(),
       cardImage: shared.normalizePreviewAssetUrl(item?.card_image),
       cardVideo: shared.normalizePreviewAssetUrl(item?.card_video),
+      cardStyle: CARD_STYLE_OPTIONS.includes(String(item?.card_style || '').trim())
+        ? String(item.card_style).trim()
+        : '',
       category,
       hasValidUrl: Boolean(url),
       sortOrder: Number(item?.sort_order ?? 9999),

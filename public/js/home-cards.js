@@ -1,6 +1,23 @@
 (function () {
   const Home = window.IoriHome = window.IoriHome || {};
 
+  const CARD_STYLE_OPTIONS = ['style1', 'style2', 'style3', 'style4', 'style5'];
+
+  function resolveCardStyle(config, site) {
+    const explicit = String(site?.cardStyle || site?.card_style || '').trim();
+    if (CARD_STYLE_OPTIONS.includes(explicit)) return explicit;
+    const fallback = String(config?.cardStyle || '').trim();
+    return CARD_STYLE_OPTIONS.includes(fallback) ? fallback : 'style1';
+  }
+
+  function getCardStyleClass(style) {
+    if (style === 'style2') return 'style-2';
+    if (style === 'style3') return 'style-3';
+    if (style === 'style4') return 'style-4';
+    if (style === 'style5') return 'style-5';
+    return '';
+  }
+
   Home.createCardController = function () {
     const initialCards = document.querySelectorAll('.site-card.card-anim-enter');
     const sitesGrid = document.getElementById('sitesGrid');
@@ -253,13 +270,20 @@
       sites.forEach((site, index) => {
         const isAboveFold = index < (cardConfig.aboveFoldImageCount || 8);
         const imgLoadingAttrs = isAboveFold ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"';
+        const effectiveStyle = resolveCardStyle(cardConfig, site);
+        const isNavigationTileStyle = effectiveStyle === 'style3';
+        const isMediaCardStyle = effectiveStyle === 'style4' || effectiveStyle === 'style5';
+        const cardStyleClass = getCardStyleClass(effectiveStyle);
+        const hideDesc = isNavigationTileStyle || cardConfig.hideDesc;
+        const hideLinks = isNavigationTileStyle || cardConfig.hideLinks;
+        const hideCategory = isNavigationTileStyle || cardConfig.hideCategory;
         const logoHtml = site.logoUrlHtml
           ? `<img src="${site.logoUrlHtml}" alt="${site.nameHtml}" width="40" height="40" class="${cardConfig.logoClass}" ${imgLoadingAttrs}>`
           : `<div class="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center text-white font-semibold text-lg shadow-inner">${site.cardInitialHtml}</div>`;
 
-        const descHtml = cardConfig.hideDesc ? '' : `<p class="${cardConfig.descClass}" title="${site.descHtml}">${site.descHtml}</p>`;
+        const descHtml = hideDesc ? '' : `<p class="${cardConfig.descClass}" title="${site.descHtml}">${site.descHtml}</p>`;
 
-        const linksHtml = cardConfig.hideLinks ? '' : `
+        const linksHtml = hideLinks ? '' : `
           <div class="${cardConfig.linkRowClass}">
             <span class="${cardConfig.urlTextClass}" title="${site.displayUrlHtml}">${site.displayUrlHtml}</span>
             <button class="${cardConfig.copyButtonBaseClass} ${site.hasValidUrl ? cardConfig.copyButtonEnabledClass : cardConfig.copyButtonDisabledClass}" data-url="${site.urlHtml}" ${site.hasValidUrl ? '' : 'disabled'}>
@@ -269,23 +293,23 @@
             </button>
           </div>`;
 
-        const categoryHtml = cardConfig.hideCategory ? '' : `
+        const categoryHtml = hideCategory ? '' : `
                 <span class="${cardConfig.categoryClass}">
                   ${site.catalogHtml}
                 </span>`;
 
         const card = document.createElement('div');
-        card.className = `${cardConfig.baseCardClass} ${cardConfig.frostedClass} ${cardConfig.cardStyleClass} card-anim-enter`;
+        card.className = `${cardConfig.baseCardClass} ${cardConfig.frostedClass} ${cardStyleClass} card-anim-enter`;
         prepareCardAnimation(card, index, animationType);
         bindCardAnimationCleanup(card);
 
         card.setAttribute('data-id', site.id);
 
-        const mediaHtml = cardConfig.cardStyle === 'style4'
+        const mediaHtml = effectiveStyle === 'style4'
           ? (site.hasCardImage
             ? `<div class="site-card-media"><img src="${site.cardImageHtml}" alt="${site.nameHtml}" ${imgLoadingAttrs}></div>`
             : `<div class="site-card-media site-card-media-fallback">${site.cardInitialHtml}</div>`)
-          : (cardConfig.cardStyle === 'style5'
+          : (effectiveStyle === 'style5'
             ? (site.hasCardVideo
               ? `<div class="site-card-media"><video src="${site.cardVideoHtml}" ${site.hasCardImage ? `poster="${site.cardImageHtml}"` : ''} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video></div>`
               : `<div class="site-card-media site-card-media-fallback">${site.cardInitialHtml}</div>`)

@@ -1,7 +1,7 @@
 // functions/api/pending/[id].js
 import { isAdminAuthenticated, errorResponse, jsonResponse, markHomeCacheDirty, normalizeSortOrder } from '../../_middleware';
 import { buildFaviconUrl, getUrlMatchCandidates, normalizeUrlForStorage, sanitizeUrl } from '../../lib/utils';
-import { normalizeBookmarkCardImage, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
+import { normalizeBookmarkCardImage, normalizeBookmarkCardStyle, normalizeBookmarkCardVideo, normalizeBookmarkDesc, normalizeBookmarkLogo, normalizeBookmarkName, normalizeBookmarkUrl } from '../../lib/validators';
 
 export async function onRequestPut(context) {
   const { request, env, params } = context;
@@ -56,6 +56,9 @@ export async function onRequestPut(context) {
     const cardVideoResult = normalizeBookmarkCardVideo(getField('card_video', config.card_video), { nullIfEmpty: true });
     if (!cardVideoResult.ok) return errorResponse(cardVideoResult.message, 400);
 
+    const cardStyleResult = normalizeBookmarkCardStyle(getField('card_style', config.card_style), { nullIfEmpty: true });
+    if (!cardStyleResult.ok) return errorResponse(cardStyleResult.message, 400);
+
     const sanitizedName = nameResult.value;
     const rawUrl = urlResult.value;
     const sanitizedUrl = normalizeUrlForStorage(rawUrl);
@@ -63,6 +66,7 @@ export async function onRequestPut(context) {
     const sanitizedDesc = descResult.value;
     const sanitizedCardImage = sanitizeUrl(cardImageResult.value);
     const sanitizedCardVideo = sanitizeUrl(cardVideoResult.value);
+    const sanitizedCardStyle = cardStyleResult.value || null;
     const sortOrderValue = hasField('sort_order') ? normalizeSortOrder(updateData.sort_order) : 9999;
     const isPrivateValue = getField('is_private', false) ? 1 : 0;
 
@@ -91,9 +95,9 @@ export async function onRequestPut(context) {
     const finalIsPrivate = category.is_private === 1 ? 1 : isPrivateValue;
 
     await env.NAV_DB.prepare(`
-      INSERT INTO sites (name, url, logo, desc, card_image, card_video, catelog_id, catelog_name, sort_order, is_private)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, catelogId, category.catelog, sortOrderValue, finalIsPrivate).run();
+      INSERT INTO sites (name, url, logo, desc, card_image, card_video, card_style, catelog_id, catelog_name, sort_order, is_private)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(sanitizedName, sanitizedUrl, sanitizedLogo, sanitizedDesc, sanitizedCardImage, sanitizedCardVideo, sanitizedCardStyle, catelogId, category.catelog, sortOrderValue, finalIsPrivate).run();
     
     await env.NAV_DB.prepare('DELETE FROM pending_sites WHERE id = ?').bind(id).run();
 

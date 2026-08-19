@@ -1,5 +1,12 @@
 import { escapeHTML, sanitizeUrl } from './utils';
 
+const CARD_STYLES = ['style1', 'style2', 'style3', 'style4', 'style5'];
+
+function normalizeCardStyle(value) {
+  const text = String(value ?? '').trim();
+  return CARD_STYLES.includes(text) ? text : '';
+}
+
 function buildSearchText(site, normalizedUrl) {
   return [
     site?.name,
@@ -30,9 +37,9 @@ export function buildCardTemplateConfig(settings = {}, device = 'desktop') {
   const cardStyle = getDeviceSetting(settings, device, 'layout_card_style', isMobile ? 'style2' : 'style1') || (isMobile ? 'style2' : 'style1');
   const isNavigationTileStyle = cardStyle === 'style3';
   const isMediaCardStyle = cardStyle === 'style4' || cardStyle === 'style5';
-  const hideDesc = isNavigationTileStyle || getDeviceSetting(settings, device, 'layout_hide_desc', isMobile) === true;
-  const hideLinks = isNavigationTileStyle || getDeviceSetting(settings, device, 'layout_hide_links', isMobile) === true;
-  const hideCategory = isNavigationTileStyle || getDeviceSetting(settings, device, 'layout_hide_category', false) === true;
+  const hideDesc = getDeviceSetting(settings, device, 'layout_hide_desc', isMobile) === true;
+  const hideLinks = getDeviceSetting(settings, device, 'layout_hide_links', isMobile) === true;
+  const hideCategory = getDeviceSetting(settings, device, 'layout_hide_category', false) === true;
   const enableFrostedGlass = getDeviceSetting(settings, device, 'layout_enable_frosted_glass', false) === true;
   const cardAnimation = getDeviceSetting(settings, device, 'layout_card_animation', 'radial') || 'radial';
   const gridCols = getDeviceSetting(settings, device, 'layout_grid_cols', isMobile ? '3' : '4') || (isMobile ? '3' : '4');
@@ -112,10 +119,31 @@ export function buildCardViewModel(site) {
     cardVideoHtml: escapeHTML(normalizedCardVideo),
     hasCardImage: Boolean(normalizedCardImage),
     hasCardVideo: Boolean(normalizedCardVideo),
+    cardStyle: normalizeCardStyle(site?.card_style),
     cardInitialHtml: escapeHTML((rawName.trim().charAt(0) || '站').toUpperCase()),
     hasValidUrl: Boolean(normalizedUrl),
     searchText: buildSearchText(site, normalizedUrl),
   };
+}
+
+/**
+ * 解析卡片最终生效的风格：书签自选优先，未选择时跟随设备全局设置。
+ * @param {object} config - buildCardTemplateConfig 的结果
+ * @param {object} card - buildCardViewModel 的结果
+ * @returns {string} style1 ~ style5
+ */
+export function resolveEffectiveCardStyle(config = {}, card = {}) {
+  const explicit = normalizeCardStyle(card?.cardStyle);
+  if (explicit) return explicit;
+  return CARD_STYLES.includes(config?.cardStyle) ? config.cardStyle : 'style1';
+}
+
+export function getCardStyleClass(style) {
+  if (style === 'style2') return 'style-2';
+  if (style === 'style3') return 'style-3';
+  if (style === 'style4') return 'style-4';
+  if (style === 'style5') return 'style-5';
+  return '';
 }
 
 export function buildCardHydrationState(sites, settings = {}) {

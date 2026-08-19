@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   INPUT_LIMITS,
   normalizeBookmarkCardImage,
+  normalizeBookmarkCardStyle,
   normalizeBookmarkCardVideo,
   normalizeBookmarkDesc,
   normalizeBookmarkLogo,
@@ -34,8 +35,17 @@ test('optional validators can return null for empty values', () => {
   assert.deepEqual(normalizeBookmarkLogo('', { nullIfEmpty: true }), { ok: true, value: null });
   assert.deepEqual(normalizeBookmarkCardImage('', { nullIfEmpty: true }), { ok: true, value: null });
   assert.deepEqual(normalizeBookmarkCardVideo('', { nullIfEmpty: true }), { ok: true, value: null });
+  assert.deepEqual(normalizeBookmarkCardStyle('', { nullIfEmpty: true }), { ok: true, value: null });
   assert.deepEqual(normalizeBookmarkDesc('', { nullIfEmpty: true }), { ok: true, value: null });
   assert.deepEqual(normalizeBookmarkDesc(''), { ok: true, value: '' });
+});
+
+test('card style validator only accepts empty or style1 through style5', () => {
+  assert.deepEqual(normalizeBookmarkCardStyle(''), { ok: true, value: '' });
+  assert.deepEqual(normalizeBookmarkCardStyle('style1'), { ok: true, value: 'style1' });
+  assert.deepEqual(normalizeBookmarkCardStyle('style5'), { ok: true, value: 'style5' });
+  assert.equal(normalizeBookmarkCardStyle('style6').ok, false);
+  assert.equal(normalizeBookmarkCardStyle('javascript:alert(1)').ok, false);
 });
 
 test('import size validator caps categories and sites', () => {
