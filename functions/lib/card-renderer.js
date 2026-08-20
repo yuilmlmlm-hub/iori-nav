@@ -24,6 +24,8 @@ export function renderSiteCards(sites, settings) {
     const hideDesc = isNavigationTileStyle || config.hideDesc;
     const hideLinks = isNavigationTileStyle || config.hideLinks;
     const hideCategory = isNavigationTileStyle || config.hideCategory;
+    const cardHref = card.isHlsStream ? card.playerUrlHtml : (card.urlHtml || '#');
+    const streamBadge = card.isHlsStream ? '<span class="stream-badge">▶ 在线播放</span>' : '';
 
     const descHtml = hideDesc ? '' : `<p class="${config.descClass}" title="${card.descHtml}">${card.descHtml}</p>`;
 
@@ -55,9 +57,10 @@ export function renderSiteCards(sites, settings) {
         <div class="${config.baseCardClass} ${config.frostedClass} ${cardStyleClass} card-anim-enter" data-id="${card.id}">
           ${mediaHtml}
           <div class="site-card-media-overlay">
-            <a href="${card.urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
+            <a href="${cardHref}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
               <div class="site-card-media-top">
                 <h3 class="${config.titleClass}" title="${card.nameHtml}">${card.nameHtml}</h3>
+                ${streamBadge}
                 ${categoryHtml}
               </div>
             </a>
@@ -72,7 +75,7 @@ export function renderSiteCards(sites, settings) {
     return `
       <div class="${config.baseCardClass} ${config.frostedClass} ${cardStyleClass} card-anim-enter" data-id="${card.id}">
         <div class="site-card-content">
-          <a href="${card.urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
+          <a href="${cardHref}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
             <div class="flex items-start">
               <div class="${config.siteIconClass}">
                 ${card.logoUrlHtml
@@ -82,6 +85,7 @@ export function renderSiteCards(sites, settings) {
               </div>
               <div class="flex-1 min-w-0">
                 <h3 class="${config.titleClass}" title="${card.nameHtml}">${card.nameHtml}</h3>
+                ${streamBadge}
                 ${categoryHtml}
               </div>
             </div>

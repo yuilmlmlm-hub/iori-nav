@@ -32,6 +32,21 @@ export function sanitizeUrl(url) {
     }
 }
 
+/**
+ * 判断 URL 是否为 HLS 流地址（.m3u8 / .m3u）
+ */
+export function isHlsUrl(url) {
+    if (!url) return false;
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+        const path = parsed.pathname.toLowerCase();
+        return path.endsWith('.m3u8') || path.endsWith('.m3u');
+    } catch {
+        return false;
+    }
+}
+
 function getUrlAuthority(parsed) {
     const auth = (parsed.username || parsed.password)
         ? `${parsed.username}${parsed.password ? `:${parsed.password}` : ''}@`

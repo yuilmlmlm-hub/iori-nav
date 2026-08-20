@@ -142,6 +142,8 @@
       const nameHtml = shared.escapeHTML(card.name);
       const urlHtml = shared.escapeHTML(card.url);
       const displayUrlHtml = shared.escapeHTML(card.displayUrl);
+      const cardHref = card.isHlsStream ? card.playerUrl : (urlHtml || '#');
+      const streamBadge = card.isHlsStream ? '<span class="stream-badge">▶ 在线播放</span>' : '';
       const logoHtml = card.logo
         ? `<img src="${shared.escapeHTML(card.logo)}" alt="${nameHtml}" width="40" height="40" class="w-10 h-10 rounded-lg object-cover bg-gray-100" loading="lazy" decoding="async">`
         : `<div class="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center text-white font-semibold text-lg shadow-inner">${initial}</div>`;
@@ -199,9 +201,10 @@
         <article class="${cardClass}" data-id="${shared.escapeHTML(card.id)}">
           ${mediaHtml}
           <div class="site-card-media-overlay">
-            <a href="${urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
+            <a href="${cardHref}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
               <div class="site-card-media-top">
                 <h3 class="site-title text-base font-medium truncate transition-all duration-300" title="${nameHtml}">${nameHtml}</h3>
+                ${streamBadge}
                 ${categoryHtml}
               </div>
             </a>
@@ -216,14 +219,15 @@
       return `
         <article class="${cardClass}" data-id="${shared.escapeHTML(card.id)}">
           <div class="site-card-content">
-            <a href="${urlHtml || '#'}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
+            <a href="${cardHref}" ${card.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
               <div class="flex items-start">
                 <div class="site-icon flex-shrink-0 mr-4 transition-all duration-300">
                   ${logoHtml}
                 </div>
                 <div class="flex-1 min-w-0">
                   <h3 class="site-title text-base font-medium text-gray-900 truncate transition-all duration-300 origin-left" title="${nameHtml}">${nameHtml}</h3>
-                ${categoryHtml}
+                  ${streamBadge}
+                  ${categoryHtml}
                 </div>
               </div>
               ${descHtml}

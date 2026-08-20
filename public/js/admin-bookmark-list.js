@@ -135,13 +135,22 @@
     const cardInitial = (safeName.charAt(0) || '站').toUpperCase();
     const privateIcon = getPrivateIcon(config);
     const logoHtml = getLogoHtml(config, safeName, cardInitial);
+    const isHlsStream = (() => {
+      try {
+        const path = new URL(config.url || '').pathname.toLowerCase();
+        return path.endsWith('.m3u8') || path.endsWith('.m3u');
+      } catch {
+        return false;
+      }
+    })();
 
     card.className = 'site-card group cursor-pointer';
     card.draggable = true;
     card.dataset.id = config.id;
     card.addEventListener('click', () => {
       if (normalizedUrl) {
-        window.open(normalizedUrl, '_blank', 'noopener,noreferrer');
+        const openUrl = isHlsStream ? '/player.html?url=' + encodeURIComponent(normalizedUrl) : normalizedUrl;
+        window.open(openUrl, '_blank', 'noopener,noreferrer');
       }
     });
 

@@ -277,6 +277,8 @@
         const hideDesc = isNavigationTileStyle || cardConfig.hideDesc;
         const hideLinks = isNavigationTileStyle || cardConfig.hideLinks;
         const hideCategory = isNavigationTileStyle || cardConfig.hideCategory;
+        const cardHref = site.isHlsStream ? site.playerUrlHtml : (site.urlHtml || '#');
+        const streamBadge = site.isHlsStream ? '<span class="stream-badge">▶ 在线播放</span>' : '';
         const logoHtml = site.logoUrlHtml
           ? `<img src="${site.logoUrlHtml}" alt="${site.nameHtml}" width="40" height="40" class="${cardConfig.logoClass}" ${imgLoadingAttrs}>`
           : `<div class="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center text-white font-semibold text-lg shadow-inner">${site.cardInitialHtml}</div>`;
@@ -318,9 +320,10 @@
         const mediaCardHtml = mediaHtml ? `
           ${mediaHtml}
           <div class="site-card-media-overlay">
-            <a href="${site.urlHtml || '#'}" ${site.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
+            <a href="${cardHref}" ${site.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="site-card-media-link">
               <div class="site-card-media-top">
                 <h3 class="${cardConfig.titleClass}" title="${site.nameHtml}">${site.nameHtml}</h3>
+                ${streamBadge}
                 ${categoryHtml}
               </div>
             </a>
@@ -330,13 +333,14 @@
             </div>
           </div>` : `
         <div class="site-card-content">
-          <a href="${site.urlHtml || '#'}" ${site.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
+          <a href="${cardHref}" ${site.hasValidUrl ? 'target="_blank" rel="noopener noreferrer"' : ''} class="block">
             <div class="flex items-start">
               <div class="${cardConfig.siteIconClass}">
                 ${logoHtml}
               </div>
               <div class="flex-1 min-w-0">
                 <h3 class="${cardConfig.titleClass}" title="${site.nameHtml}">${site.nameHtml}</h3>
+                ${streamBadge}
                 ${categoryHtml}
               </div>
             </div>

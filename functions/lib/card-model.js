@@ -1,4 +1,4 @@
-import { escapeHTML, sanitizeUrl } from './utils';
+import { escapeHTML, isHlsUrl, sanitizeUrl } from './utils';
 
 const CARD_STYLES = ['style1', 'style2', 'style3', 'style4', 'style5'];
 
@@ -105,6 +105,8 @@ export function buildCardViewModel(site) {
   const rawDesc = site?.desc || '暂无描述';
   const normalizedCardImage = sanitizeUrl(site?.card_image);
   const normalizedCardVideo = sanitizeUrl(site?.card_video);
+  const isStream = isHlsUrl(normalizedUrl);
+  const playerUrl = isStream ? `/player.html?url=${encodeURIComponent(normalizedUrl)}` : '';
 
   return {
     id: site?.id,
@@ -120,6 +122,8 @@ export function buildCardViewModel(site) {
     hasCardImage: Boolean(normalizedCardImage),
     hasCardVideo: Boolean(normalizedCardVideo),
     cardStyle: normalizeCardStyle(site?.card_style),
+    isHlsStream: isStream,
+    playerUrlHtml: escapeHTML(playerUrl),
     cardInitialHtml: escapeHTML((rawName.trim().charAt(0) || '站').toUpperCase()),
     hasValidUrl: Boolean(normalizedUrl),
     searchText: buildSearchText(site, normalizedUrl),

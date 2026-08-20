@@ -194,6 +194,30 @@ test('media card URLs are sanitized before hydration', () => {
   assert.equal(cards[0].hasCardVideo, false);
 });
 
+test('m3u8 bookmarks link to the built-in player and show the play badge', () => {
+  const settings = parseSettings([]);
+  const streamHtml = renderSiteCards([
+    { id: 1, name: 'Live Stream', url: 'https://example.com/live/index.m3u8', desc: 'Live', catelog_name: 'Video' },
+  ], settings);
+  const normalHtml = renderSiteCards([
+    { id: 2, name: 'Normal', url: 'https://example.com/page', desc: 'Site', catelog_name: 'Web' },
+  ], settings);
+  const { cards } = buildCardHydrationState([
+    { id: 1, name: 'Live Stream', url: 'https://example.com/live/index.m3u8' },
+    { id: 2, name: 'Normal', url: 'https://example.com/page' },
+  ], settings);
+
+  assert.match(streamHtml, /href="\/player\.html\?url=https%3A%2F%2Fexample\.com%2Flive%2Findex\.m3u8"/);
+  assert.match(streamHtml, /stream-badge/);
+  assert.doesNotMatch(streamHtml, /href="https:\/\/example\.com\/live\/index\.m3u8"/);
+  assert.match(normalHtml, /href="https:\/\/example\.com\/page"/);
+  assert.doesNotMatch(normalHtml, /stream-badge/);
+  assert.equal(cards[0].isHlsStream, true);
+  assert.equal(cards[0].playerUrlHtml, '/player.html?url=https%3A%2F%2Fexample.com%2Flive%2Findex.m3u8');
+  assert.equal(cards[1].isHlsStream, false);
+  assert.equal(cards[1].playerUrlHtml, '');
+});
+
 test('media card CSS covers style four and five on home and admin preview', () => {
   const homeCss = readFileSync('public/css/style.css', 'utf8');
   const previewCss = readFileSync('public/css/admin-preview-cards.css', 'utf8');

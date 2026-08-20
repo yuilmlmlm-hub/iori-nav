@@ -548,6 +548,24 @@ body:not(.app-ready) #sidebar a[href="?catalog=all"] {
     text-overflow: ellipsis;
 }
 
+/* m3u8 在线播放角标 */
+.stream-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  width: max-content;
+  margin-top: 0.15rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.92);
+  color: #ffffff !important;
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
 @media (max-width: 767px) {
     .site-card.style-2 .site-category {
         display: inline-block;

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>在线播放器</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      display: flex;
+      flex-direction: column;
+      background: #0b0f14;
+      color: #e5e7eb;
+      font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    }
+    .player-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .player-header a.back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    .player-header a.back:hover { color: #bfdbfe; }
+    .player-title {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.75);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .player-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      min-height: 0;
+    }
+    video {
+      width: 100%;
+      max-width: 1100px;
+      max-height: calc(100vh - 8rem);
+      background: #000;
+      border-radius: 10px;
+      outline: none;
+    }
+    .player-status {
+      display: none;
+      max-width: 640px;
+      padding: 1.2rem 1.4rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fca5a5;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      word-break: break-all;
+    }
+    .player-status.show { display: block; }
+    .player-status .status-title { color: #f87171; font-weight: 700; margin-bottom: 0.4rem; }
+    .player-loading {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+    }
+    .player-wrap { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; }
+  </style>
+</head>
+<body>
+  <header class="player-header">
+    <a class="back" href="/" title="返回首页">‹ 返回首页</a>
+    <span class="player-title" id="playerTitle"></span>
+  </header>
+  <main class="player-body">
+    <div class="player-wrap">
+      <div class="player-loading" id="playerLoading">正在加载播放地址…</div>
+      <video id="video" controls playsinline preload="metadata"></video>
+      <div class="player-status" id="playerStatus">
+        <div class="status-title">无法播放</div>
+        <div id="playerStatusText"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/hls.min.js?v=1.5.13"></script>
+  <script>
+    (function () {
+      const video = document.getElementById('video');
+      const titleEl = document.getElementById('playerTitle');
+      const statusEl = document.getElementById('playerStatus');
+      const statusTextEl = document.getElementById('playerStatusText');
+      const loadingEl = document.getElementById('playerLoading');
+
+      function showError(message) {
+        loadingEl.style.display = 'none';
+        statusTextEl.textContent = message;
+        statusEl.classList.add('show');
+      }
+
+      function getSafeStreamUrl() {
+        const raw = new URLSearchParams(window.location.search).get('url') || '';
+        try {
+          const parsed = new URL(raw);
+          if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+          return parsed.href;
+        } catch {
+          return '';
+        }
+      }
+
+      function isHlsUrl(url) {
+        try {
+          const path = new URL(url).pathname.toLowerCase();
+          return path.endsWith('.m3u8') || path.endsWith('.m3u');
+        } catch {
+          return false;
+        }
+      }
+
+      const streamUrl = getSafeStreamUrl();
+      if (!streamUrl) {
+        showError('缺少有效的播放地址。请通过书签链接进入，播放地址需为 http/https 直链。');
+        return;
+      }
+      titleEl.textContent = streamUrl;
+
+      function playM3u8(url) {
+        if (window.Hls && window.Hls.isSupported()) {
+          const hls = new window.Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            backBufferLength: 60,
+          });
+          hls.loadSource(url);
+          hls.attachMedia(video);
+          hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            loadingEl.style.display = 'none';
+            video.play().catch(function () {
+              video.muted = true;
+              video.play().catch(function () {});
+            });
+          });
+          hls.on(window.Hls.Events.ERROR, function (event, data) {
+            if (!data || data.fatal) {
+              showError('流媒体加载失败：' + (data && data.details ? data.details : '未知错误')
+                + '。请确认该 m3u8 地址可直接访问且支持跨域（CORS）。');
+            }
+          });
+          window.__iorihls = hls;
+          return;
+        }
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = url;
+          loadingEl.style.display = 'none';
+          video.play().catch(function () {
+            video.muted = true;
+            video.play().catch(function () {});
+          });
+          return;
+        }
+        showError('当前浏览器不支持 HLS 播放，请使用较新版本的 Chrome、Edge 或 Safari。');
+      }
+
+      function playDirect(url) {
+        loadingEl.style.display = 'none';
+        video.src = url;
+        video.play().catch(function () {
+          video.muted = true;
+          video.play().catch(function () {});
+        });
+      }
+
+      video.addEventListener('error', function () {
+        const code = video.error ? video.error.code : '';
+        showError('视频加载失败（错误码 ' + code + '）。请确认播放地址可直接访问。');
+      });
+
+      if (isHlsUrl(streamUrl)) {
+        playM3u8(streamUrl);
+      } else {
+        playDirect(streamUrl);
+      }
+    })();
+  </script>
+</body>
+</html>

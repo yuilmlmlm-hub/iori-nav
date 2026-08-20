@@ -28,6 +28,14 @@ const CARD_STYLE_OPTIONS = ['style1', 'style2', 'style3', 'style4', 'style5'];
     const fallbackName = shared.getHostnameLabel(url) || '未命名书签';
     const name = String(item?.name || fallbackName).trim();
     const category = String(item?.catelog_name || item?.catelog || getPreviewCategoryById(item?.catelog_id) || '未分类').trim();
+    const isHlsStream = (() => {
+      try {
+        const path = new URL(url).pathname.toLowerCase();
+        return path.endsWith('.m3u8') || path.endsWith('.m3u');
+      } catch {
+        return false;
+      }
+    })();
 
     return {
       id: item?.id ?? '',
@@ -43,6 +51,8 @@ const CARD_STYLE_OPTIONS = ['style1', 'style2', 'style3', 'style4', 'style5'];
         : '',
       category,
       hasValidUrl: Boolean(url),
+      isHlsStream,
+      playerUrl: isHlsStream ? `/player.html?url=${encodeURIComponent(url)}` : '',
       sortOrder: Number(item?.sort_order ?? 9999),
       createdAt: Date.parse(item?.create_time || '') || 0,
     };

@@ -7,6 +7,7 @@ import {
   escapeLikePattern,
   getUrlMatchCandidates,
   getStyleStr,
+  isHlsUrl,
   normalizeUrlForStorage,
   parsePagination,
   sanitizeStyleColor,
@@ -27,6 +28,16 @@ test('sanitizeUrl only allows absolute http and https URLs', () => {
   assert.equal(sanitizeUrl('/relative/path'), '');
   assert.equal(sanitizeUrl('javascript:alert(1)'), '');
   assert.equal(sanitizeUrl('data:text/html,<svg>'), '');
+});
+
+test('isHlsUrl detects m3u8 and m3u stream links', () => {
+  assert.equal(isHlsUrl('https://example.com/live/index.m3u8'), true);
+  assert.equal(isHlsUrl('https://example.com/live/index.m3u8?token=abc'), true);
+  assert.equal(isHlsUrl('https://example.com/live/playlist.m3u'), true);
+  assert.equal(isHlsUrl('https://example.com/live/index.m3u8x'), false);
+  assert.equal(isHlsUrl('https://example.com/page'), false);
+  assert.equal(isHlsUrl(''), false);
+  assert.equal(isHlsUrl('javascript:alert(1).m3u8'), false);
 });
 
 test('bookmark URL normalization keeps only root URLs slashless', () => {
